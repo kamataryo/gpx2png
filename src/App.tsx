@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { useDropzone } from 'react-dropzone'
-import { addGeojsonSourceAndLayers, addGSIPhotoImageLayer, emphasizeIsland, gpx2str } from './lib';
+import { addGeojsonSourceAndLayers, addGSIPhotoImageLayer, emphasizeIsland, gpx2str, setControl } from './lib';
 // @ts-ignore
 import tj from '@mapbox/togeojson'
 import GeoJSON from 'geojson'
@@ -52,6 +52,7 @@ function App() {
       addGSIPhotoImageLayer(map)
       addGeojsonSourceAndLayers(map, geojson)
       emphasizeIsland(map)
+      setControl(map)
     })
   }, [geojson])
 
@@ -59,7 +60,11 @@ function App() {
     geojson ?
     <>
       <script id="geojson" type="application/json">{JSON.stringify(geojson)}</script>
-      <GeoloniaMap hash={'on'} style={ {width: '100%', height: '100%'} } onLoad={onLoadCallback}></GeoloniaMap>
+        <GeoloniaMap
+          hash={'on'}
+          style={ {width: '100%', height: '100%'} }
+          onLoad={onLoadCallback}
+        />
     </>
      :
     <div className="App">

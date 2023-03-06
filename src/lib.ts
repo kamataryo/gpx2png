@@ -1,5 +1,6 @@
 // @ts-ignore
 import type { Map } from '@geolonia/embed'
+import ExportControl from '@geolonia/mbgl-export-control/src/index'
 
 export const gpx2str = (gpxFile: File) => {
   const reader = new FileReader()
@@ -74,4 +75,9 @@ export const addGSIPhotoImageLayer = (map: Map) => {
 export const emphasizeIsland = (map: Map) => {
   map.setLayoutProperty('place-island-name', 'text-size', 14)
   map.setPaintProperty('place-island-name', 'text-color', 'black')
+}
+
+export const setControl = (map: Map) => {
+  const control = new ExportControl({ attribution: '' })
+  map.addControl(control)
 }
