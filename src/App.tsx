@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { useDropzone } from 'react-dropzone'
-import { addGeojsonSourceAndLayers, addGSIPhotoImageLayer, emphasizeIsland, gpxFile2txt, processGeoJSON, setControl } from './lib';
+import { addGeojsonSourceAndLayers, addGSIPhotoImageLayer, emphasizeIsland, gpxFile2txt, processGeoJSON, setControl, synthesizeAttribution } from './lib';
 // @ts-ignore
 import tj from '@mapbox/togeojson'
 import GeoJSON from 'geojson'
@@ -24,11 +24,11 @@ function App() {
   const {getRootProps, getInputProps, isDragActive} = useDropzone({ onDrop })
 
   const onLoadCallback = useCallback((map: Map) => {
-    map.once('load', () => {
+    map.once('load', async () => {
       addGSIPhotoImageLayer(map)
       addGeojsonSourceAndLayers(map, geojson)
       emphasizeIsland(map)
-      setControl(map)
+      setControl(map, synthesizeAttribution)
     })
   }, [geojson])
 
@@ -48,8 +48,8 @@ function App() {
           <input {...getInputProps()} />
           {
             isDragActive ?
-              <p>Drop the files here ...</p> :
-              <p>Drag 'n' drop some GPX files here, or click to select files</p>
+              <p>GPX ファイルをドロップしてください</p> :
+              <p>GPX ファイルをここにドラッグ<br />またはクリックして選択します</p>
           }
         </div>
       </header>

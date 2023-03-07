@@ -1,6 +1,6 @@
 // @ts-ignore
 import type { Map } from '@geolonia/embed'
-import ExportControl from '@geolonia/mbgl-export-control/src/index'
+import { ExportControl } from './mbgl-export-control2'
 import * as turf from '@turf/turf'
 
 export const gpxFile2txt = (gpxFile: File) => {
@@ -177,7 +177,54 @@ export const emphasizeIsland = (map: Map) => {
   map.setPaintProperty('place-island-name', 'text-color', 'black')
 }
 
-export const setControl = (map: Map) => {
-  const control = new ExportControl({ attribution: '' })
+export const setControl = (map: Map, callback: (image: Blob) => Promise<Blob>) => {
+  const control = new ExportControl({ attribution: '', callback })
   map.addControl(control)
+}
+
+export const synthesizeAttribution = async (target: Blob): Promise<Blob> => {
+
+
+  const attributionImageResp = await fetch('./attribution.png')
+
+  const targetImageUrl = URL.createObjectURL(target)
+  const attrImageUrl = URL.createObjectURL(await attributionImageResp.blob())
+
+  const targetImage =new Image()
+  targetImage.src = targetImageUrl
+  const attrImage =new Image()
+  attrImage.src = attrImageUrl
+
+  await Promise.all([
+    new Promise(resolve => { targetImage.onload = () => resolve(true) }),
+    new Promise(resolve => { attrImage.onload = () => resolve(true) })
+  ])
+
+  const canvas = document.createElement('canvas')
+  canvas.width = targetImage.width
+  canvas.height = targetImage.height
+  document.body.append(canvas)
+  const ctx = canvas.getContext('2d')
+  if(!ctx) {
+    throw new Error('no ctx')
+  }
+  ctx.drawImage(targetImage, 0, 0, targetImage.width, targetImage.height)
+  ctx.drawImage(attrImage, 0, 0, targetImage.width, targetImage.height)
+
+  const synthesized = await new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => {
+    if(blob) {
+      resolve(blob)
+    } else {
+      reject(new Error('cannot convert into Blob'))
+    }
+  }))
+
+  URL.revokeObjectURL(targetImageUrl)
+  URL.revokeObjectURL(targetImageUrl)
+  targetImage.remove()
+  attrImage.remove()
+  canvas.remove()
+
+  return synthesized
+
 }
