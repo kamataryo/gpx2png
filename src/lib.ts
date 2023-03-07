@@ -54,7 +54,6 @@ export const processGeoJSON = (geojson: GeoJSON.FeatureCollection<GeoJSON.LineSt
     { type: 'Feature', properties: { end: 'false', label: (Math.round(midLength * 100) / 100) + 'km' }, geometry: { type: 'Point', coordinates: midPoint } },
     { type: 'Feature', properties: { end: 'true', label: (Math.round(totalLength * 100) / 100) + 'km' }, geometry: { type: 'Point', coordinates: endPoint } },
   ]
-  console.log(enrichedGeoJSON)
   return enrichedGeoJSON
 }
 
@@ -155,7 +154,6 @@ export const addGeojsonSourceAndLayers = (map: Map, geojson: any) => {
       'text-halo-blur': 0.5,
     }
   }, 'place-island-name')
-  console.log(map.getStyle())
 }
 
 export const addGSIPhotoImageLayer = (map: Map) => {
