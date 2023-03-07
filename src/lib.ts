@@ -64,29 +64,6 @@ export const addGeojsonSourceAndLayers = (map: Map, geojson: any) => {
     type: 'geojson',
     data: geojson,
   })
-  // map.addLayer({
-  //   id: 'track-end-halo1',
-  //   type: 'circle',
-  //   filter: ['all',
-  //     ['==', '$type', 'Point'],
-  //     ['==', 'end','true'],
-  //   ],
-  //   source: 'track',
-  //   paint: {
-  //     'circle-radius': 9,
-  //     'circle-color': 'black',
-  //   },
-  // }, 'place-island-name')
-  // map.addLayer({
-  //   id: 'track-halo',
-  //   type: 'line',
-  //   filter: ['==', '$type', 'LineString'],
-  //   source: 'track',
-  //   paint: {
-  //     'line-width': 4,
-  //     'line-color': 'black',
-  //   }
-  // }, 'place-island-name')
   map.addLayer({
     id: 'track',
     type: 'line',
@@ -94,7 +71,7 @@ export const addGeojsonSourceAndLayers = (map: Map, geojson: any) => {
     source: 'track',
     paint: {
       'line-width': 3,
-      'line-color': 'orangered',
+      'line-color': 'orange',
     }
   }, 'place-island-name')
   map.addLayer({
@@ -106,23 +83,10 @@ export const addGeojsonSourceAndLayers = (map: Map, geojson: any) => {
     ],
     source: 'track',
     paint: {
-      'circle-radius': 8,
-      'circle-color': 'orangered',
+      'circle-radius': 10,
+      'circle-color': 'orange',
     },
   }, 'place-island-name')
-  // map.addLayer({
-  //   id: 'track-end-halo3',
-  //   type: 'circle',
-  //   filter: ['all',
-  //     ['==', '$type', 'Point'],
-  //     ['==', 'end', 'true'],
-  //   ],
-  //   source: 'track',
-  //   paint: {
-  //     'circle-radius': 6,
-  //     'circle-color': 'black',
-  //   },
-  // }, 'place-island-name')
   map.addLayer({
     id: 'track-end',
     type: 'circle',
@@ -132,7 +96,7 @@ export const addGeojsonSourceAndLayers = (map: Map, geojson: any) => {
     ],
     source: 'track',
     paint: {
-      'circle-radius': 5,
+      'circle-radius': 7,
       'circle-color': 'darkblue',
     },
   }, 'place-island-name')
@@ -143,20 +107,33 @@ export const addGeojsonSourceAndLayers = (map: Map, geojson: any) => {
     filter: ['==', '$type', 'Point'],
     layout: {
       'text-field': '{label}',
+      'text-size': 16,
       'text-font': ["Noto Sans Regular"],
       'text-anchor': 'top',
-      'text-offset': [0, 0.3],
+      'text-offset': [0, 0.5],
     },
     paint: {
       'text-color': 'white',
-      'text-halo-color': 'black',
-      'text-halo-width': 2,
-      'text-halo-blur': 0.5,
+      'text-halo-color': 'darkblue',
+      'text-halo-width': 3,
+      'text-halo-blur': 0.7,
     }
   }, 'place-island-name')
 }
 
 export const addGSIPhotoImageLayer = (map: Map) => {
+
+  const layers = map.getStyle().layers
+  const afterOf = 'oc-waterway-river-ja'
+
+  const afterOfIndex = layers.map(layer => layer.id).indexOf(afterOf)
+
+  for (let index = 0; index < afterOfIndex; index++) {
+    map.removeLayer(layers[index].id)
+  }
+
+  const layerId = 'gsi-photo'
+
   map.addSource('gsi-photo', {
     type: 'raster',
     tiles: ['https://maps.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg'],
@@ -164,17 +141,25 @@ export const addGSIPhotoImageLayer = (map: Map) => {
     attribution: '国土地理院 全国最新写真',
   })
   map.addLayer({
-    'id': 'gsi-photo',
+    'id': layerId,
     'type': 'raster',
     'source': 'gsi-photo',
     'minzoom': 0,
     'maxzoom': 22,
-    }, 'oc-waterway-river-ja')
+    }, afterOf)
 }
 
 export const emphasizeIsland = (map: Map) => {
-  map.setLayoutProperty('place-island-name', 'text-size', 14)
+  map.setLayoutProperty('place-island-name', 'text-size', 16)
   map.setPaintProperty('place-island-name', 'text-color', 'black')
+
+  const layers = map.getStyle().layers
+  for (const layer of layers) {
+    // @ts-ignore
+    if(layer.source === 'geolonia' && layer.layout && layer.layout['text-field']) {
+      map.setPaintProperty(layer.id, 'text-color', 'black')
+    }
+  }
 }
 
 export const setControl = (map: Map, callback: (image: Blob) => Promise<Blob>) => {

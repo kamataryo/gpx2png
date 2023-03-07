@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { useDropzone } from 'react-dropzone'
@@ -34,11 +34,11 @@ function App() {
 
   return (
     geojson ?
-        <GeoloniaMap
-          className="map"
-          hash={'on'}
-          onLoad={onLoadCallback}
-        />
+      <GeoloniaMap
+        className="map"
+        hash={'on'}
+        onLoad={onLoadCallback}
+      />
      :
     <div className="App">
       <header className="App-header">

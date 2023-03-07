@@ -10,20 +10,20 @@ type Options = {
   textFont: string[]
 }
 
-const defaultOptions: Options = {
-  dpi: 300,
-  attribution: "© OpenStreetMap Contributors",
-  callback: async (blob) => blob,
-  textFont: [],
-}
-
 export class ExportControl {
+
+  static defaultOptions: Options = {
+    dpi: 300,
+    attribution: "© OpenStreetMap Contributors",
+    callback: async (blob) => blob,
+    textFont: [],
+  }
 
   public options: Options
   public container: HTMLDivElement | null = null
 
   constructor(options: Partial<Options> = {}) {
-    this.options = { ...defaultOptions, ...options }
+    this.options = { ...ExportControl.defaultOptions, ...options }
   }
 
   onAdd(map: GeoloniaMap) {
