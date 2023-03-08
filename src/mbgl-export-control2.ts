@@ -5,25 +5,21 @@ import type { Map as GeoloniaMap } from '@geolonia/embed'
 
 type Options = {
   dpi: number,
-  attribution: string,
   callback: (blob: Blob) => Promise<Blob>,
-  textFont: string[]
 }
 
-export class ExportControl {
+export class ExportControl2 {
 
   static defaultOptions: Options = {
     dpi: 300,
-    attribution: "© OpenStreetMap Contributors",
     callback: async (blob) => blob,
-    textFont: [],
   }
 
   public options: Options
   public container: HTMLDivElement | null = null
 
   constructor(options: Partial<Options> = {}) {
-    this.options = { ...ExportControl.defaultOptions, ...options }
+    this.options = { ...ExportControl2.defaultOptions, ...options }
   }
 
   onAdd(map: GeoloniaMap) {
@@ -51,7 +47,6 @@ export class ExportControl {
 
       const width = map.getContainer().offsetWidth
       const height = map.getContainer().offsetHeight
-      const bottomRight = map.unproject([width, height]).toArray()
 
       this.setStyles(_container, {
         visibility: "hidden",
@@ -92,63 +87,6 @@ export class ExportControl {
       })
 
       _map.once('load', () => {
-        const geojson = {
-          type: 'FeatureCollection',
-          features: [{
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: bottomRight
-            },
-            properties: {
-              text: this.options.attribution
-            }
-          }]
-        };
-
-        _map.addSource("attribution-for-image", {
-          type: "geojson",
-          data: geojson
-        })
-
-        let textFont: string[] = []
-        if (this.options.textFont.length) {
-          textFont = this.options.textFont
-        } else {
-          const layers = map.getStyle().layers
-          for (let i = 0; i < layers.length; i++) {
-            try {
-              const fonts = map.getLayoutProperty(layers[i].id, 'text-font')
-              if (fonts && fonts.length) {
-                textFont = fonts
-                break;
-              }
-            } catch (e) {
-              // Nothing to do.
-            }
-          }
-        }
-
-        _map.addLayer({
-          "id": "markers",
-          "type": "symbol",
-          "source": "attribution-for-image",
-          "paint": {
-            "text-color": "#000000",
-            "text-halo-color": "rgba(255, 255, 255, 1)",
-            "text-halo-width": 2,
-          },
-          "layout": {
-            "text-field": "{text}",
-            "text-font": textFont,
-            "text-size": 18,
-            "text-anchor": "bottom-right",
-            "text-max-width": 28,
-            "text-offset": [-0.5, -0.5],
-            "text-allow-overlap": true,
-          }
-        });
-
         setTimeout(() => {
           _map.getCanvas().toBlob(async (blob) => {
             if(blob) {
@@ -217,5 +155,3 @@ export class ExportControl {
     }
   }
 }
-
-export default ExportControl

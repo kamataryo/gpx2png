@@ -1,6 +1,6 @@
 // @ts-ignore
 import type { Map } from '@geolonia/embed'
-import { ExportControl } from './mbgl-export-control2'
+import { ExportControl2 } from './mbgl-export-control2'
 import * as turf from '@turf/turf'
 
 export const gpxFile2txt = (gpxFile: File) => {
@@ -163,7 +163,7 @@ export const emphasizeIsland = (map: Map) => {
 }
 
 export const setControl = (map: Map, callback: (image: Blob) => Promise<Blob>) => {
-  const control = new ExportControl({ attribution: '', callback })
+  const control = new ExportControl2({ callback })
   map.addControl(control)
 }
 
