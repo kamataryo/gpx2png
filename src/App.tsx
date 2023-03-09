@@ -1,4 +1,5 @@
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
+import ReactDOM from 'react-dom'
 import logo from './logo.svg';
 import './App.css';
 import { useDropzone } from 'react-dropzone'
@@ -25,32 +26,40 @@ function App() {
 
   const onLoadCallback = useCallback((map: Map) => {
     map.once('load', async () => {
-      addGSIPhotoImageLayer(map)
-      addGeojsonSourceAndLayers(map, geojson)
       emphasizeIsland(map)
-      setControl(map, synthesizeAttribution)
+      addGeojsonSourceAndLayers(map, geojson, () => {
+        addGSIPhotoImageLayer(map)
+        setControl(map, synthesizeAttribution)
+        const dlButton = document.querySelector('.mapboxgl-ctrl-icon[aria-label="Download"]')
+        if(dlButton) {
+        // TODO:
+        //   const wizard = document.createElement('span')
+        //   dlButton.append(wizard)
+        //   wizard.className = 'wizard'
+        //   wizard.textContent = 'クリックしてダウンロード'
+        }
+      })
     })
   }, [geojson])
 
+
+
   return (
     geojson ?
-      <GeoloniaMap
-        className="map"
-        hash={'on'}
-        onLoad={onLoadCallback}
-      />
+      <div className="map-wrap">
+        <GeoloniaMap
+          className="map"
+          onLoad={onLoadCallback}
+        />
+      </div>
      :
     <div className="App">
       <header className="App-header">
-        <h1>GPX to PNG</h1>
-        <img src={logo} className="App-logo" alt="logo" />
-        <div className="drop-target" {...getRootProps()}>
+        <h1>{'GPS データ 画像変換'}</h1>
+        <div className={(isDragActive ? 'drag-active ' : '') + "drop-target"} {...getRootProps()}>
+          <img src={logo} className="App-logo" alt="logo" />
           <input {...getInputProps()} />
-          {
-            isDragActive ?
-              <p>GPX ファイルをドロップしてください</p> :
-              <p>GPX ファイルをここにドラッグ<br />またはクリックして選択します</p>
-          }
+            <p>GPX ファイルをここにドラッグ<br />またはクリックしてアップロード</p>
         </div>
       </header>
     </div>

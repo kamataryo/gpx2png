@@ -57,7 +57,7 @@ export const processGeoJSON = (geojson: GeoJSON.FeatureCollection<GeoJSON.LineSt
   return enrichedGeoJSON
 }
 
-export const addGeojsonSourceAndLayers = (map: Map, geojson: any) => {
+export const addGeojsonSourceAndLayers = (map: Map, geojson: any, callback: Function) => {
   const bbox = turf.bbox(geojson) as any
   map.fitBounds(bbox, { padding: 50 })
   map.addSource('track', {
@@ -71,7 +71,7 @@ export const addGeojsonSourceAndLayers = (map: Map, geojson: any) => {
     source: 'track',
     paint: {
       'line-width': 3,
-      'line-color': 'orange',
+      'line-color': 'rgb(255, 72, 0)',
     }
   }, 'place-island-name')
   map.addLayer({
@@ -84,7 +84,7 @@ export const addGeojsonSourceAndLayers = (map: Map, geojson: any) => {
     source: 'track',
     paint: {
       'circle-radius': 10,
-      'circle-color': 'orange',
+      'circle-color': 'rgb(255, 72, 0)',
     },
   }, 'place-island-name')
   map.addLayer({
@@ -119,6 +119,7 @@ export const addGeojsonSourceAndLayers = (map: Map, geojson: any) => {
       'text-halo-blur': 0.7,
     }
   }, 'place-island-name')
+  map.once('moveend', () => callback())
 }
 
 export const addGSIPhotoImageLayer = (map: Map) => {
@@ -138,7 +139,7 @@ export const addGSIPhotoImageLayer = (map: Map) => {
     type: 'raster',
     tiles: ['https://maps.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg'],
     tileSize: 256,
-    attribution: '国土地理院 全国最新写真',
+    attribution: '国土地理院 シームレス空中写真',
   })
   map.addLayer({
     'id': layerId,

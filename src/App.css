@@ -42,19 +42,32 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: #000000;
+  background-color: #282c34;
 }
 
 .drop-target {
   width: 80vw;
-  height: 200px;
-  border: 4px dashed white;
+  border: 4px dashed rgb(204, 204, 204);
+  font-size: .75em;
+}
+
+.drop-target.drag-active {
+  background-color: #739ba190;
+}
+
+.map-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .map {
-  width: 100%;
-  height: 100%;
-  max-width: 100vh;
-  max-height: 100vw;
-  margin: auto;
+  width: calc(100% - 50px);
+  height: calc(100% - 50px);
+  max-width: calc(100vh - 50px);
+  max-height: calc(100vw - 50px);
 }
