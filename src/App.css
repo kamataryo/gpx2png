@@ -81,3 +81,7 @@ body {
   max-width: calc(100vh - 50px);
   max-height: calc(100vw - 50px);
 }
+
+.tmp-container .maplibregl-ctrl-attrib {
+  display: none;
+}

@@ -43,6 +43,7 @@ export class ExportControl2 {
       const _loading = this.loading()
 
       const _container = document.createElement('div')
+      _container.className = 'tmp-container'
       document.body.appendChild(_container)
 
       this.setStyles(_container, {
