@@ -118,7 +118,7 @@ export const addGeojsonSourceAndLayers = (map: Map, geojson: any, callback: Func
       'text-halo-width': 3,
       'text-halo-blur': 0.7,
     }
-  }, 'place-island-name')
+  })
   map.once('moveend', () => callback())
 }
 
