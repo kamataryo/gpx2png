@@ -49,6 +49,7 @@ function App() {
         <GeoloniaMap
           className="map"
           onLoad={onLoadCallback}
+          gestureHandling="off"
         />
       </div>
      :
