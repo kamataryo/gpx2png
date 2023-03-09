@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import ReactDOM from 'react-dom'
 import logo from './logo.svg';
 import './App.css';
 import { useDropzone } from 'react-dropzone'
