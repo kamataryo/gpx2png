@@ -44,6 +44,12 @@ html, body, #root {
   padding: 0;
   background-color: #282c34;
 }
+html {
+  height: -webkit-fill-available;
+}
+body {
+  min-height: -webkit-fill-available;
+}
 
 .drop-target {
   width: 80vw;
