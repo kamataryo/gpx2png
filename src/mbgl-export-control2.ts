@@ -52,8 +52,8 @@ export class ExportControl2 {
       this.setStyles(_container, {
         visibility: "hidden",
         position: "absolute",
-        top: '0',
-        bottom: '0',
+        top: '-9999px',
+        bottom: '-9999px',
         width: `${width}px`,
         height: `${height}px`,
       })
