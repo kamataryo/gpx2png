@@ -46,13 +46,16 @@ export class ExportControl2 {
       _container.className = 'tmp-container'
       document.body.appendChild(_container)
 
+      const width = map.getContainer().offsetWidth
+      const height = map.getContainer().offsetHeight
+
       this.setStyles(_container, {
         visibility: "hidden",
         position: "absolute",
         top: '0',
         bottom: '0',
-        width: `1024px`,
-        height: `1024px`,
+        width: `${width}px`,
+        height: `${height}px`,
       })
 
       let fontFamily = 'Noto Sans Regular'
