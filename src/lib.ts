@@ -124,13 +124,22 @@ export const addGeojsonSourceAndLayers = (map: Map, geojson: any, callback: Func
 
 export const addGSIPhotoImageLayer = (map: Map) => {
 
-  const layers = map.getStyle().layers
+  let layers = map.getStyle().layers
   const afterOf = 'oc-waterway-river-ja'
 
   const afterOfIndex = layers.map(layer => layer.id).indexOf(afterOf)
 
   for (let index = 0; index < afterOfIndex; index++) {
     map.removeLayer(layers[index].id)
+  }
+  layers = map.getStyle().layers
+  for (const layer of layers) {
+    if('source' in layer && (
+      layer.source === 'fudepoli' ||
+      (layer.source === 'geolonia' && layer['source-layer'] === 'landuse')
+      )) {
+      map.removeLayer(layer.id)
+    }
   }
 
   const layerId = 'gsi-photo'
@@ -176,9 +185,9 @@ export const synthesizeAttribution = async (target: Blob): Promise<Blob> => {
   const targetImageUrl = URL.createObjectURL(target)
   const attrImageUrl = URL.createObjectURL(await attributionImageResp.blob())
 
-  const targetImage =new Image()
+  const targetImage = new Image()
   targetImage.src = targetImageUrl
-  const attrImage =new Image()
+  const attrImage = new Image()
   attrImage.src = attrImageUrl
 
   await Promise.all([
