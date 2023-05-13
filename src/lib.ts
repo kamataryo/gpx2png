@@ -50,8 +50,8 @@ export const processGeoJSON = (geojson: GeoJSON.FeatureCollection<GeoJSON.LineSt
   }
   enrichedGeoJSON.features = [
     geojson.features[0],
-    { type: 'Feature', properties: { end: 'true', label: '0km' }, geometry: { type: 'Point', coordinates: startPoint } },
-    { type: 'Feature', properties: { end: 'false', label: (Math.round(midLength * 100) / 100) + 'km' }, geometry: { type: 'Point', coordinates: midPoint } },
+    // { type: 'Feature', properties: { end: 'true', label: '0km' }, geometry: { type: 'Point', coordinates: startPoint } },
+    // { type: 'Feature', properties: { end: 'false', label: (Math.round(midLength * 100) / 100) + 'km' }, geometry: { type: 'Point', coordinates: midPoint } },
     { type: 'Feature', properties: { end: 'true', label: (Math.round(totalLength * 100) / 100) + 'km' }, geometry: { type: 'Point', coordinates: endPoint } },
   ]
   return enrichedGeoJSON
