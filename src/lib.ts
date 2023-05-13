@@ -24,7 +24,7 @@ export const processGeoJSON = (geojson: GeoJSON.FeatureCollection<GeoJSON.LineSt
     return prev
   } , { length: 0, cursor: null })
 
-  const startPoint = geojson.features[0].geometry.coordinates[0]
+  // const startPoint = geojson.features[0].geometry.coordinates[0]
   const endPoint = geojson.features[0].geometry.coordinates[geojson.features[0].geometry.coordinates.length - 1]
 
   let midPointIndex: number | null = null
@@ -40,7 +40,7 @@ export const processGeoJSON = (geojson: GeoJSON.FeatureCollection<GeoJSON.LineSt
       indexCursor ++
     }
   }
-  const midPoint = geojson.features[0].geometry.coordinates[midPointIndex]
+  // const midPoint = geojson.features[0].geometry.coordinates[midPointIndex]
 
   const enrichedGeoJSON: GeoJSON.FeatureCollection<GeoJSON.LineString | GeoJSON.Point> = {
     type: 'FeatureCollection',
