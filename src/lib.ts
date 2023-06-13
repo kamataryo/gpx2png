@@ -57,7 +57,8 @@ export const processGeoJSON = (geojson: GeoJSON.FeatureCollection<GeoJSON.LineSt
   return enrichedGeoJSON
 }
 
-export const addGeojsonSourceAndLayers = (map: Map, geojson: any, callback: Function) => {
+export const addGeojsonSourceAndLayers = (map: Map, geojsons: any[], callback: Function) => {
+  const geojson = { type: 'FeatureCollection', features: geojsons.map(geojson => geojson.features).flat() }
   const bbox = turf.bbox(geojson) as any
   map.fitBounds(bbox, { padding: 50 })
   map.addSource('track', {

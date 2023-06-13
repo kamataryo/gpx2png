@@ -12,21 +12,21 @@ import type { Map } from '@geolonia/embed'
 
 function App() {
 
-  const [geojson, setGeojson] = useState<GeoJSON.FeatureCollection<GeoJSON.LineString | GeoJSON.Point> | null>(null)
+  const [geojsons, setGeojsons] = useState<(GeoJSON.FeatureCollection<GeoJSON.LineString | GeoJSON.Point> | null)[]>([])
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const gpxText = await gpxFile2txt(acceptedFiles[0])
-    const gpxXml = new DOMParser().parseFromString(gpxText, 'text/xml')
-    const geojson = tj.gpx(gpxXml) as GeoJSON.FeatureCollection<GeoJSON.LineString>
-    const enrichedGeoJSON = processGeoJSON(geojson)
-    setGeojson(enrichedGeoJSON)
+    const gpxTexts = await Promise.all(acceptedFiles.map(acceptedFile => gpxFile2txt(acceptedFile)))
+    const gpxXMLs = gpxTexts.map(gpxText => new DOMParser().parseFromString(gpxText, 'text/xml'))
+    const geojsons = gpxXMLs.map(gpxXml => tj.gpx(gpxXml) as GeoJSON.FeatureCollection<GeoJSON.LineString>)
+    const enrichedGeoJSONs = geojsons.map(geojson => processGeoJSON(geojson))
+    setGeojsons(enrichedGeoJSONs)
   }, [])
   const {getRootProps, getInputProps, isDragActive} = useDropzone({ onDrop })
 
   const onLoadCallback = useCallback((map: Map) => {
     map.once('load', async () => {
       emphasizeIsland(map)
-      addGeojsonSourceAndLayers(map, geojson, () => {
+      addGeojsonSourceAndLayers(map, geojsons, () => {
         addGSIPhotoImageLayer(map)
         setControl(map, synthesizeAttribution)
         const dlButton = document.querySelector('.mapboxgl-ctrl-icon[aria-label="Download"]')
@@ -39,12 +39,12 @@ function App() {
         }
       })
     })
-  }, [geojson])
+  }, [geojsons])
 
 
 
   return (
-    geojson ?
+    geojsons.length > 0 ?
       <div className="map-wrap">
         <GeoloniaMap
           className="map"
