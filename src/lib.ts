@@ -24,22 +24,22 @@ export const processGeoJSON = (geojson: GeoJSON.FeatureCollection<GeoJSON.LineSt
     return prev
   } , { length: 0, cursor: null })
 
-  // const startPoint = geojson.features[0].geometry.coordinates[0]
+  const startPoint = geojson.features[0].geometry.coordinates[0]
   const endPoint = geojson.features[0].geometry.coordinates[geojson.features[0].geometry.coordinates.length - 1]
 
-  let midPointIndex: number | null = null
-  let indexCursor = 0
-  let midLength = 0
-  while (midPointIndex === null) {
-    const prev = geojson.features[0].geometry.coordinates[indexCursor]
-    const next = geojson.features[0].geometry.coordinates[indexCursor + 1]
-    midLength += turf.distance(prev, next, { units: 'kilometers' })
-    if(midLength > totalLength / 2) {
-      midPointIndex = indexCursor
-    } else {
-      indexCursor ++
-    }
-  }
+  // let midPointIndex: number | null = null
+  // let indexCursor = 0
+  // let midLength = 0
+  // while (midPointIndex === null) {
+  //   const prev = geojson.features[0].geometry.coordinates[indexCursor]
+  //   const next = geojson.features[0].geometry.coordinates[indexCursor + 1]
+  //   midLength += turf.distance(prev, next, { units: 'kilometers' })
+  //   if(midLength > totalLength / 2) {
+  //     midPointIndex = indexCursor
+  //   } else {
+  //     indexCursor ++
+  //   }
+  // }
   // const midPoint = geojson.features[0].geometry.coordinates[midPointIndex]
 
   const enrichedGeoJSON: GeoJSON.FeatureCollection<GeoJSON.LineString | GeoJSON.Point> = {
@@ -50,8 +50,7 @@ export const processGeoJSON = (geojson: GeoJSON.FeatureCollection<GeoJSON.LineSt
   }
   enrichedGeoJSON.features = [
     geojson.features[0],
-    // { type: 'Feature', properties: { end: 'true', label: '0km' }, geometry: { type: 'Point', coordinates: startPoint } },
-    // { type: 'Feature', properties: { end: 'false', label: (Math.round(midLength * 100) / 100) + 'km' }, geometry: { type: 'Point', coordinates: midPoint } },
+    { type: 'Feature', properties: { end: 'true' }, geometry: { type: 'Point', coordinates: startPoint } },
     { type: 'Feature', properties: { end: 'true', label: (Math.round(totalLength * 100) / 100) + 'km' }, geometry: { type: 'Point', coordinates: endPoint } },
   ]
   return enrichedGeoJSON
@@ -137,7 +136,8 @@ export const addGSIPhotoImageLayer = (map: Map) => {
   for (const layer of layers) {
     if('source' in layer && (
       layer.source === 'fudepoli' ||
-      (layer.source === 'geolonia' && layer['source-layer'] === 'landuse')
+      (layer.source === 'geolonia' && layer['source-layer'] === 'landuse') ||
+      layer.type === 'fill'
       )) {
       map.removeLayer(layer.id)
     }
