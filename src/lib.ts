@@ -137,7 +137,8 @@ export const addGSIPhotoImageLayer = (map: Map) => {
     if('source' in layer && (
       layer.source === 'fudepoli' ||
       (layer.source === 'geolonia' && layer['source-layer'] === 'landuse') ||
-      layer.type === 'fill'
+      layer.type === 'fill' ||
+      layer.id === 'waterway-river'
       )) {
       map.removeLayer(layer.id)
     }
