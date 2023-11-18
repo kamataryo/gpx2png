@@ -29,19 +29,9 @@ function App() {
       addGeojsonSourceAndLayers(map, geojsons, () => {
         addGSIPhotoImageLayer(map)
         setControl(map, synthesizeAttribution)
-        const dlButton = document.querySelector('.mapboxgl-ctrl-icon[aria-label="Download"]')
-        if(dlButton) {
-        // TODO:
-        //   const wizard = document.createElement('span')
-        //   dlButton.append(wizard)
-        //   wizard.className = 'wizard'
-        //   wizard.textContent = 'クリックしてダウンロード'
-        }
       })
     })
   }, [geojsons])
-
-
 
   return (
     geojsons.length > 0 ?
