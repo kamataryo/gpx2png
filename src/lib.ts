@@ -13,29 +13,62 @@ export const gpxFile2txt = (gpxFile: File) => {
   })
 }
 
-export const processGeoJSON = (geojson: GeoJSON.FeatureCollection<GeoJSON.LineString>) => {
-  const { length: totalLength } = geojson.features[0].geometry.coordinates.reduce<{ cursor: null | number[], length: number }>((prev, current) => {
+export const processGeoJSON = (geojson: GeoJSON.FeatureCollection<GeoJSON.LineString, null | { coordTimes?: string[] }>) => {
+  const mainTrack = geojson.features[0]
+  const coordTimesAvailable = mainTrack.properties && Array.isArray(mainTrack.properties.coordTimes) && mainTrack.properties.coordTimes.every(value => typeof value === 'string') && mainTrack.properties.coordTimes.length === mainTrack.geometry.coordinates.length
+  const { length: totalLength, speedList } = mainTrack.geometry.coordinates.reduce<{ cursor: null | number[], speedList: null | number[], length: number }>((prev, current, i) => {
     if(prev.cursor === null) {
-
+      if(coordTimesAvailable) {
+        prev.speedList = []
+      }
     } else {
-      prev.length += turf.distance(prev.cursor, current, { units: 'kilometers' })
+      const distance = turf.distance(prev.cursor, current, { units: 'kilometers' })
+      if(coordTimesAvailable) {
+        const interval = new Date(mainTrack.properties!.coordTimes![i]).getTime() - new Date(mainTrack.properties!.coordTimes![i - 1]).getTime()
+        prev.speedList!.push(distance / (interval / 1000 / 60 / 60))
+      }
+      prev.length += distance
     }
     prev.cursor = current
     return prev
-  } , { length: 0, cursor: null })
+  } , { length: 0, speedList: null, cursor: null })
 
-  const endPoint = geojson.features[0].geometry.coordinates[geojson.features[0].geometry.coordinates.length - 1]
+  let normalizedSpeedList: null | (number | null)[] = null
+  if(speedList) {
+    const speedMean = speedList.reduce((prev, current) => prev + current, 0) / speedList.length
+    const speedStandardVariable = (speedList.reduce((prev, current) => {
+      const diff = current - speedMean
+      return prev + diff * diff
+    }, 0) / speedList.length) ** 0.5
+
+    normalizedSpeedList = speedList.map(speed => {
+      const diff = Math.abs(speed - speedMean)
+      if (diff > speedStandardVariable * 3) {
+        return null
+      } else {
+        return speed
+      }
+    })
+  }
+
+  const enrichedMainTrack = {
+    ...mainTrack,
+    properties: {
+      ...mainTrack.properties,
+      speedList: normalizedSpeedList,
+    }
+  }
+
+  const endPoint = mainTrack.geometry.coordinates[mainTrack.geometry.coordinates.length - 1]
 
   const enrichedGeoJSON: GeoJSON.FeatureCollection<GeoJSON.LineString | GeoJSON.Point> = {
     type: 'FeatureCollection',
     features: [
-      geojson.features[0],
+      enrichedMainTrack,
+      { type: 'Feature', properties: { end: 'true', label: (Math.round(totalLength * 100) / 100) + 'km' }, geometry: { type: 'Point', coordinates: endPoint } },
     ]
   }
-  enrichedGeoJSON.features = [
-    geojson.features[0],
-    { type: 'Feature', properties: { end: 'true', label: (Math.round(totalLength * 100) / 100) + 'km' }, geometry: { type: 'Point', coordinates: endPoint } },
-  ]
+
   return enrichedGeoJSON
 }
 

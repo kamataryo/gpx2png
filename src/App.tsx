@@ -17,7 +17,7 @@ function App() {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const gpxTexts = await Promise.all(acceptedFiles.map(acceptedFile => gpxFile2txt(acceptedFile)))
     const gpxXMLs = gpxTexts.map(gpxText => new DOMParser().parseFromString(gpxText, 'text/xml'))
-    const geojsons = gpxXMLs.map(gpxXml => tj.gpx(gpxXml) as GeoJSON.FeatureCollection<GeoJSON.LineString>)
+    const geojsons = gpxXMLs.map(gpxXml => tj.gpx(gpxXml) as GeoJSON.FeatureCollection<GeoJSON.LineString, null | { coordTimes?: string[] }>)
     const enrichedGeoJSONs = geojsons.map(geojson => processGeoJSON(geojson))
     setGeojsons(enrichedGeoJSONs)
   }, [])
