@@ -1,5 +1,3 @@
-// @ts-ignore
-import type { Map } from '@geolonia/embed'
 import { ExportControl2 } from './mbgl-export-control2'
 import * as turf from '@turf/turf'
 
@@ -72,8 +70,8 @@ export const processGeoJSON = (geojson: GeoJSON.FeatureCollection<GeoJSON.LineSt
   return enrichedGeoJSON
 }
 
-export const addGeojsonSourceAndLayers = (map: Map, geojsons: any[], callback: Function) => {
-  const geojson = { type: 'FeatureCollection', features: geojsons.map(geojson => geojson.features).flat() }
+export const addGeojsonSourceAndLayers = (map: maplibregl.Map, geojsons: any[], callback: Function) => {
+  const geojson = { type: 'FeatureCollection' as const, features: geojsons.map(geojson => geojson.features).flat() }
   const bbox = turf.bbox(geojson) as any
   map.fitBounds(bbox, { padding: 50 })
   map.addSource('track', {
@@ -138,10 +136,10 @@ export const addGeojsonSourceAndLayers = (map: Map, geojsons: any[], callback: F
   map.once('moveend', () => callback())
 }
 
-export const addGSIPhotoImageLayer = (map: Map) => {
+export const addGSIPhotoImageLayer = (map: maplibregl.Map) => {
 
   let layers = map.getStyle().layers
-  const afterOf = 'oc-waterway-river-ja'
+  const afterOf = layers[0].id
 
   const afterOfIndex = layers.map(layer => layer.id).indexOf(afterOf)
 
@@ -177,7 +175,7 @@ export const addGSIPhotoImageLayer = (map: Map) => {
     }, afterOf)
 }
 
-export const emphasizeIsland = (map: Map) => {
+export const emphasizeIsland = (map: maplibregl.Map) => {
   map.setLayoutProperty('place-island-name', 'text-size', 16)
   map.setPaintProperty('place-island-name', 'text-color', 'black')
 
@@ -190,7 +188,7 @@ export const emphasizeIsland = (map: Map) => {
   }
 }
 
-export const setControl = (map: Map, callback: (image: Blob) => Promise<Blob>) => {
+export const setControl = (map: maplibregl.Map, callback: (image: Blob) => Promise<Blob>) => {
   const control = new ExportControl2({ callback })
   map.addControl(control)
 }

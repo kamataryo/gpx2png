@@ -1,7 +1,7 @@
 import 'canvas-toBlob'
 import FileSaver from 'file-saver'
 import { loading, download } from '@geolonia/mbgl-export-control/src/icons'
-import type { Map as GeoloniaMap } from '@geolonia/embed'
+import maplibregl from 'maplibre-gl'
 
 type Options = {
   dpi: number,
@@ -22,7 +22,7 @@ export class ExportControl2 {
     this.options = { ...ExportControl2.defaultOptions, ...options }
   }
 
-  onAdd(map: GeoloniaMap) {
+  onAdd(map: maplibregl.Map) {
     this.container = document.createElement('div')
     this.container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group maplibregl-ctrl maplibregl-ctrl-group'
 
@@ -63,13 +63,7 @@ export class ExportControl2 {
         fontFamily = map.style.glyphManager.localIdeographFontFamily
       }
 
-      let Map: typeof GeoloniaMap;
-      if ('undefined' !== typeof window.geolonia) {
-        Map = window.geolonia.Map
-      } else {
-        // @ts-ignore
-        Map = mapboxgl.Map
-      }
+      const Map = maplibregl.Map
 
       const copiedStyle = JSON.parse(JSON.stringify(map.getStyle()))
 

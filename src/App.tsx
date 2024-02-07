@@ -6,9 +6,8 @@ import { addGeojsonSourceAndLayers, addGSIPhotoImageLayer, emphasizeIsland, gpxF
 // @ts-ignore
 import tj from '@mapbox/togeojson'
 import GeoJSON from 'geojson'
-import { GeoloniaMap } from '@geolonia/embed-react'
-// @ts-ignore
-import type { Map } from '@geolonia/embed'
+import maplibregl from 'maplibre-gl';
+import Map from 'react-map-gl/maplibre';
 
 function App() {
 
@@ -23,23 +22,32 @@ function App() {
   }, [])
   const {getRootProps, getInputProps, isDragActive} = useDropzone({ onDrop })
 
-  const onLoadCallback = useCallback((map: Map) => {
+  const onLoadCallback = useCallback((e: maplibregl.MapLibreEvent) => {
+    const map = e.target
     map.once('load', async () => {
       emphasizeIsland(map)
       addGeojsonSourceAndLayers(map, geojsons, () => {
         addGSIPhotoImageLayer(map)
         setControl(map, synthesizeAttribution)
+        setTimeout(() => {
+          console.log(map.getStyle().layers.map(l => l.id))
+        }, 3000)
       })
     })
   }, [geojsons])
 
   return (
-    geojsons.length > 0 ?
+    (geojsons.length > 0) ?
       <div className="map-wrap">
-        <GeoloniaMap
-          className="map"
+        <Map
+          style={{
+            width: 'calc(100% - 50px)',
+            height: 'calc(100% - 50px)',
+            maxWidth: 'calc(100vh - 50px)',
+            maxHeight: 'calc(100vw - 50px)',
+          }}
+          mapStyle={"./style.json"}
           onLoad={onLoadCallback}
-          gestureHandling="off"
         />
       </div>
      :
