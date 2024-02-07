@@ -87,7 +87,7 @@ export const addGeojsonSourceAndLayers = (map: maplibregl.Map, geojsons: any[], 
       'line-width': 3,
       'line-color': 'rgb(255, 72, 0)',
     }
-  }, 'place-island-name')
+  })
   map.addLayer({
     id: 'track-end-halo2',
     type: 'circle',
@@ -100,7 +100,7 @@ export const addGeojsonSourceAndLayers = (map: maplibregl.Map, geojsons: any[], 
       'circle-radius': 10,
       'circle-color': 'rgb(255, 72, 0)',
     },
-  }, 'place-island-name')
+  })
   map.addLayer({
     id: 'track-end',
     type: 'circle',
@@ -113,7 +113,7 @@ export const addGeojsonSourceAndLayers = (map: maplibregl.Map, geojsons: any[], 
       'circle-radius': 7,
       'circle-color': 'darkblue',
     },
-  }, 'place-island-name')
+  })
   map.addLayer({
     id: 'track-end-label',
     type: 'symbol',
@@ -175,19 +175,6 @@ export const addGSIPhotoImageLayer = (map: maplibregl.Map) => {
     }, afterOf)
 }
 
-export const emphasizeIsland = (map: maplibregl.Map) => {
-  map.setLayoutProperty('place-island-name', 'text-size', 16)
-  map.setPaintProperty('place-island-name', 'text-color', 'black')
-
-  const layers = map.getStyle().layers
-  for (const layer of layers) {
-    // @ts-ignore
-    if(layer.source === 'geolonia' && layer.layout && layer.layout['text-field']) {
-      map.setPaintProperty(layer.id, 'text-color', 'black')
-    }
-  }
-}
-
 export const setControl = (map: maplibregl.Map, callback: (image: Blob) => Promise<Blob>) => {
   const control = new ExportControl2({ callback })
   map.addControl(control)
@@ -197,20 +184,24 @@ export const synthesizeAttribution = async (target: Blob): Promise<Blob> => {
 
 
   const attributionImageResp = await fetch('./attribution.png')
-
   const targetImageUrl = URL.createObjectURL(target)
   const attrImageUrl = URL.createObjectURL(await attributionImageResp.blob())
-
   const targetImage = new Image()
-  targetImage.src = targetImageUrl
   const attrImage = new Image()
-  attrImage.src = attrImageUrl
 
   await Promise.all([
-    new Promise(resolve => { targetImage.onload = () => resolve(true) }),
-    new Promise(resolve => { attrImage.onload = () => resolve(true) })
+    new Promise((resolve, reject) => {
+      targetImage.onload = () => resolve(true)
+      targetImage.onerror = (e) => reject(e)
+    }),
+    new Promise((resolve, reject) => {
+      attrImage.onload = () => resolve(true)
+      attrImage.onerror = (e) => reject(e)
+    })
   ])
 
+  targetImage.src = targetImageUrl
+  attrImage.src = attrImageUrl
   const canvas = document.createElement('canvas')
   canvas.width = targetImage.width
   canvas.height = targetImage.height
@@ -229,7 +220,7 @@ export const synthesizeAttribution = async (target: Blob): Promise<Blob> => {
       reject(new Error('cannot convert into Blob'))
     }
   }))
-
+  console.log(13)
   URL.revokeObjectURL(targetImageUrl)
   URL.revokeObjectURL(targetImageUrl)
   targetImage.remove()

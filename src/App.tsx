@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { useDropzone } from 'react-dropzone'
-import { addGeojsonSourceAndLayers, addGSIPhotoImageLayer, emphasizeIsland, gpxFile2txt, processGeoJSON, setControl, synthesizeAttribution } from './lib';
+import { addGeojsonSourceAndLayers, addGSIPhotoImageLayer, gpxFile2txt, processGeoJSON, setControl, synthesizeAttribution } from './lib';
 // @ts-ignore
 import tj from '@mapbox/togeojson'
 import GeoJSON from 'geojson'
@@ -25,13 +25,9 @@ function App() {
   const onLoadCallback = useCallback((e: maplibregl.MapLibreEvent) => {
     const map = e.target
     map.once('load', async () => {
-      emphasizeIsland(map)
       addGeojsonSourceAndLayers(map, geojsons, () => {
         addGSIPhotoImageLayer(map)
         setControl(map, synthesizeAttribution)
-        setTimeout(() => {
-          console.log(map.getStyle().layers.map(l => l.id))
-        }, 3000)
       })
     })
   }, [geojsons])

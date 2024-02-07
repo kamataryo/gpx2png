@@ -63,11 +63,9 @@ export class ExportControl2 {
         fontFamily = map.style.glyphManager.localIdeographFontFamily
       }
 
-      const Map = maplibregl.Map
-
       const copiedStyle = JSON.parse(JSON.stringify(map.getStyle()))
 
-      const _map = new Map({
+      const _map = new maplibregl.Map({
         container: _container,
         center: map.getCenter(),
         zoom: map.getZoom(),
@@ -82,10 +80,12 @@ export class ExportControl2 {
       })
 
       _map.once('load', () => {
-        setTimeout(() => {
+        setTimeout(() => {          console.log(2)
           _map.getCanvas().toBlob(async (blob) => {
             if(blob) {
+              console.log(4, this.options.callback)
               const transformed = await this.options.callback(blob)
+              console.log(5)
               FileSaver.saveAs(transformed, `${_map.getCenter().toArray().join('-')}.png`)
             }
             _map.remove()
