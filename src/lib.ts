@@ -183,12 +183,14 @@ export const setControl = (map: maplibregl.Map, callback: (image: Blob) => Promi
 export const synthesizeAttribution = async (target: Blob): Promise<Blob> => {
 
 
-  const attributionImageResp = await fetch('./attribution.png')
+  const attributionImageResp = await fetch('https://kamataryo.github.io/gpx2png/attribution.png')
   const targetImageUrl = URL.createObjectURL(target)
   const attrImageUrl = URL.createObjectURL(await attributionImageResp.blob())
   const targetImage = new Image()
   const attrImage = new Image()
 
+  targetImage.src = targetImageUrl
+  attrImage.src = attrImageUrl
   await Promise.all([
     new Promise((resolve, reject) => {
       targetImage.onload = () => resolve(true)
@@ -200,8 +202,6 @@ export const synthesizeAttribution = async (target: Blob): Promise<Blob> => {
     })
   ])
 
-  targetImage.src = targetImageUrl
-  attrImage.src = attrImageUrl
   const canvas = document.createElement('canvas')
   canvas.width = targetImage.width
   canvas.height = targetImage.height

@@ -1,7 +1,7 @@
 {
   "name": "gpx2png",
   "version": "0.1.0",
-  "homepage": "https://kamataryo.github.io/gpx2png",
+  "homepage": "/gpx2png/",
   "private": true,
   "dependencies": {
     "@geolonia/mbgl-export-control": "^0.4.7",

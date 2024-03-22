@@ -14,10 +14,28 @@ function App() {
   const [geojsons, setGeojsons] = useState<(GeoJSON.FeatureCollection<GeoJSON.LineString | GeoJSON.Point> | null)[]>([])
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const gpxTexts = await Promise.all(acceptedFiles.map(acceptedFile => gpxFile2txt(acceptedFile)))
+
+    const acceptedGeoJSONFiles = acceptedFiles.filter(acceptedFile => acceptedFile.name.match(/\.geojson$/))
+    const acceptedGPXFiles = acceptedFiles.filter(acceptedFile => acceptedFile.name.match(/\.gpx$/))
+
+    const geojsons = (await Promise.all(acceptedGeoJSONFiles.map(acceptedGeoJSON => acceptedGeoJSON.text())))
+      .map(geojsonText => JSON.parse(geojsonText) as GeoJSON.FeatureCollection<GeoJSON.LineString | GeoJSON.MultiLineString | GeoJSON.Point>)
+
+    for (let index = 0; index < geojsons.length; index++) {
+      const geojson = geojsons[index];
+      const linestring = geojson.features.find(feature => feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString')
+      if(linestring) {
+        geojson.features = [linestring]
+      } else {
+        geojson.features = []
+      }
+    }
+
+    const gpxTexts = await Promise.all(acceptedGPXFiles.map(acceptedGPX => gpxFile2txt(acceptedGPX)))
     const gpxXMLs = gpxTexts.map(gpxText => new DOMParser().parseFromString(gpxText, 'text/xml'))
-    const geojsons = gpxXMLs.map(gpxXml => tj.gpx(gpxXml) as GeoJSON.FeatureCollection<GeoJSON.LineString | GeoJSON.MultiLineString, null | { coordTimes?: string[] }>)
-    for (const geojson of geojsons) {
+    const gpxGeojsons = gpxXMLs.map(gpxXml => tj.gpx(gpxXml) as GeoJSON.FeatureCollection<GeoJSON.LineString | GeoJSON.MultiLineString, null | { coordTimes?: string[] }>)
+
+    for (const geojson of gpxGeojsons) {
       for (const feature of geojson.features) {
         if(feature.geometry.type === 'MultiLineString') {
           feature.geometry = {
@@ -27,8 +45,10 @@ function App() {
         }
       }
     }
+    const joinedGeoJSONs = [...geojsons.filter(geojson => geojson.features.length > 0), ...gpxGeojsons]
+    console.log(joinedGeoJSONs)
     // @ts-ignore
-    const enrichedGeoJSONs = geojsons.map(geojson => processGeoJSON(geojson))
+    const enrichedGeoJSONs = joinedGeoJSONs.map(geojson => processGeoJSON(geojson))
     setGeojsons(enrichedGeoJSONs)
   }, [])
   const {getRootProps, getInputProps, isDragActive} = useDropzone({ onDrop })
