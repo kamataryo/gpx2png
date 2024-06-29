@@ -84,7 +84,7 @@ export const addGeojsonSourceAndLayers = (map: maplibregl.Map, geojsons: any[], 
     filter: ['==', '$type', 'LineString'],
     source: 'track',
     paint: {
-      'line-width': 3,
+      'line-width': 6,
       'line-color': 'rgb(255, 72, 0)',
     }
   })
@@ -97,7 +97,7 @@ export const addGeojsonSourceAndLayers = (map: maplibregl.Map, geojsons: any[], 
     ],
     source: 'track',
     paint: {
-      'circle-radius': 10,
+      'circle-radius': 20,
       'circle-color': 'rgb(255, 72, 0)',
     },
   })
@@ -110,7 +110,7 @@ export const addGeojsonSourceAndLayers = (map: maplibregl.Map, geojsons: any[], 
     ],
     source: 'track',
     paint: {
-      'circle-radius': 7,
+      'circle-radius': 14,
       'circle-color': 'darkblue',
     },
   })
@@ -121,7 +121,7 @@ export const addGeojsonSourceAndLayers = (map: maplibregl.Map, geojsons: any[], 
     filter: ['==', '$type', 'Point'],
     layout: {
       'text-field': '{label}',
-      'text-size': 16,
+      'text-size': 32,
       'text-font': ["Noto Sans Regular"],
       'text-anchor': 'top',
       'text-offset': [0, 0.5],
