@@ -8,6 +8,30 @@ import tj from '@mapbox/togeojson'
 import GeoJSON from 'geojson'
 import maplibregl from 'maplibre-gl';
 import Map from 'react-map-gl/maplibre';
+// @ts-ignore
+import FitParser from 'fit-file-parser'
+
+const fitParser = new FitParser({
+    force: true,
+    speedUnit: 'km/h',
+    lengthUnit: 'm',
+    temperatureUnit: 'celsius',
+    elapsedRecordField: true,
+    mode: 'list',
+})
+
+const parseFit = async (content: ArrayBuffer) => {
+  return new Promise((resolve, reject) => {
+    fitParser.parse(content, (error: any, data: any) => {
+      if (error) {
+        reject(error)
+      } else {
+        resolve(data)
+      }
+    })
+  })
+}
+
 
 function App() {
 
@@ -45,7 +69,38 @@ function App() {
         }
       }
     }
-    const joinedGeoJSONs = [...geojsons.filter(geojson => geojson.features.length > 0), ...gpxGeojsons]
+
+    const fitGeojsons: (GeoJSON.FeatureCollection<GeoJSON.LineString>)[] = []
+    const fitFiles = acceptedFiles.filter(acceptedFile => acceptedFile.name.match(/\.fit$/))
+    for (const fitFile of fitFiles) {
+      const arrayBuffer = await fitFile.arrayBuffer()
+      const fitData = (await parseFit(arrayBuffer)) as { records: any[] }
+      const records = fitData.records.filter(r => r.position_lat && r.position_long)
+      const fitGeojson = {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {
+              timestamps: records.map(r => r.timestamp.toISOString()),
+            },
+            geometry: {
+              type: 'LineString',
+              coordinates: records.map(r => [r.position_long, r.position_lat]),
+            },
+          }
+        ],
+      }
+      fitGeojsons.push(fitGeojson as GeoJSON.FeatureCollection<GeoJSON.LineString>)
+    }
+    console.log(fitGeojsons)
+
+
+    const joinedGeoJSONs = [
+      ...geojsons.filter(geojson => geojson.features.length > 0),
+      ...gpxGeojsons,
+      ...fitGeojsons,
+    ]
     console.log(joinedGeoJSONs)
     // @ts-ignore
     const enrichedGeoJSONs = joinedGeoJSONs.map(geojson => processGeoJSON(geojson))
