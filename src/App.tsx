@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { useDropzone } from 'react-dropzone'
@@ -36,6 +36,8 @@ const parseFit = async (content: ArrayBuffer) => {
 function App() {
 
   const [geojsons, setGeojsons] = useState<(GeoJSON.FeatureCollection<GeoJSON.LineString | GeoJSON.Point> | null)[]>([])
+  const [showEndMarker, setShowEndMarker] = useState(true)
+  const [mapInstance, setMapInstance] = useState<maplibregl.Map | null>(null)
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
 
@@ -104,12 +106,32 @@ function App() {
     console.log(joinedGeoJSONs)
     // @ts-ignore
     const enrichedGeoJSONs = joinedGeoJSONs.map(geojson => processGeoJSON(geojson))
+
+    const stats = enrichedGeoJSONs.map((geojson, i) => {
+      const endFeature = geojson?.features.find((f: any) => f.properties?.end === 'true')
+      const distanceKm = endFeature ? parseFloat((endFeature.properties as any).label) : 0
+      return { index: i + 1, distanceKm: Math.round(distanceKm * 100) / 100 }
+    })
+    const totalDistanceKm = Math.round(stats.reduce((sum, s) => sum + s.distanceKm, 0) * 100) / 100
+    console.log('GPX 統計:', { ファイル数: stats.length, 各ルート: stats, 合計距離: totalDistanceKm + 'km' })
+
     setGeojsons(enrichedGeoJSONs)
   }, [])
   const {getRootProps, getInputProps, isDragActive} = useDropzone({ onDrop })
 
+  useEffect(() => {
+    if (!mapInstance) return
+    const visibility = showEndMarker ? 'visible' : 'none'
+    for (const layerId of ['track-end-halo2', 'track-end', 'track-end-label']) {
+      if (mapInstance.getLayer(layerId)) {
+        mapInstance.setLayoutProperty(layerId, 'visibility', visibility)
+      }
+    }
+  }, [mapInstance, showEndMarker])
+
   const onLoadCallback = useCallback((e: maplibregl.MapLibreEvent) => {
     const map = e.target
+    setMapInstance(map)
     map.once('load', async () => {
       addGeojsonSourceAndLayers(map, geojsons, () => {
         addGSIPhotoImageLayer(map)
@@ -121,6 +143,26 @@ function App() {
   return (
     (geojsons.length > 0) ?
       <div className="map-wrap">
+        <div style={{
+          position: 'absolute',
+          top: 10,
+          left: 10,
+          zIndex: 1000,
+          background: 'white',
+          padding: '8px 12px',
+          borderRadius: 4,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+          fontSize: 14,
+        }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={showEndMarker}
+              onChange={e => setShowEndMarker(e.target.checked)}
+            />
+            距離・終点マルを表示
+          </label>
+        </div>
         <Map
           style={{
             width: 'calc(100% - 50px)',
