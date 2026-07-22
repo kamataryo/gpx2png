@@ -3,22 +3,24 @@ import FileSaver from 'file-saver'
 import { loading, download } from '@geolonia/mbgl-export-control/src/icons'
 import maplibregl from 'maplibre-gl'
 
-type Options = {
+export type ExportOptions = {
   dpi: number,
   callback: (blob: Blob) => Promise<Blob>,
+  // 指定時は PNG に加えて、オフスクリーンマップからベース地図のみの SVG を生成してダウンロードする
+  svg?: (map: maplibregl.Map) => Promise<Blob>,
 }
 
 export class ExportControl2 {
 
-  static defaultOptions: Options = {
+  static defaultOptions: ExportOptions = {
     dpi: 300,
     callback: async (blob) => blob,
   }
 
-  public options: Options
+  public options: ExportOptions
   public container: HTMLDivElement | null = null
 
-  constructor(options: Partial<Options> = {}) {
+  constructor(options: Partial<ExportOptions> = {}) {
     this.options = { ...ExportControl2.defaultOptions, ...options }
   }
 
@@ -80,13 +82,17 @@ export class ExportControl2 {
       })
 
       _map.once('load', () => {
-        setTimeout(() => {          console.log(2)
+        setTimeout(() => {
           _map.getCanvas().toBlob(async (blob) => {
             if(blob) {
-              console.log(4, this.options.callback)
+              const basename = _map.getCenter().toArray().join('-')
               const transformed = await this.options.callback(blob)
-              console.log(5)
-              FileSaver.saveAs(transformed, `${_map.getCenter().toArray().join('-')}.png`)
+              FileSaver.saveAs(transformed, `${basename}.png`)
+              if (this.options.svg) {
+                // SVG は track 系を外したベース地図ラスタのみを埋め込み、トレースと帰属は SVG ベクタで描く
+                const svgBlob = await this.options.svg(_map)
+                FileSaver.saveAs(svgBlob, `${basename}.svg`)
+              }
             }
             _map.remove()
             _container.parentNode!.removeChild(_container)

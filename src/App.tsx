@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { useDropzone } from 'react-dropzone'
-import { addGeojsonSourceAndLayers, addGSIPhotoImageLayer, gpxFile2txt, processGeoJSON, setControl, synthesizeAttribution } from './lib';
+import { addGeojsonSourceAndLayers, addGSIPhotoImageLayer, BaseMapSelectControl, BASE_MAPS, DEFAULT_BASE_MAP, drawAttributionText, generateSVG, gpxFile2txt, processGeoJSON, setBaseMap, setControl, synthesizeAttribution } from './lib';
 // @ts-ignore
 import tj from '@mapbox/togeojson'
 import GeoJSON from 'geojson'
@@ -38,6 +38,12 @@ function App() {
   const [geojsons, setGeojsons] = useState<(GeoJSON.FeatureCollection<GeoJSON.LineString | GeoJSON.Point> | null)[]>([])
   const [showEndMarker, setShowEndMarker] = useState(true)
   const [mapInstance, setMapInstance] = useState<maplibregl.Map | null>(null)
+
+  // ?features=next で解禁される機能フラグ（地図選択 + SVG ダウンロード）
+  const featuresNext = useMemo(() => new URLSearchParams(window.location.search).get('features') === 'next', [])
+  const baseMapRef = useRef(DEFAULT_BASE_MAP)
+  const showEndMarkerRef = useRef(showEndMarker)
+  useEffect(() => { showEndMarkerRef.current = showEndMarker }, [showEndMarker])
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
 
@@ -135,10 +141,25 @@ function App() {
     map.once('load', async () => {
       addGeojsonSourceAndLayers(map, geojsons, () => {
         addGSIPhotoImageLayer(map)
-        setControl(map, synthesizeAttribution)
+        if (featuresNext) {
+          map.addControl(
+            new BaseMapSelectControl(baseMapRef.current, (key) => {
+              baseMapRef.current = key
+              setBaseMap(map, key)
+            }),
+            'top-left',
+          )
+          setControl(map, {
+            dpi: 300,
+            callback: (blob: Blob) => drawAttributionText(blob, BASE_MAPS[baseMapRef.current].attribution),
+            svg: (m) => generateSVG(m, geojsons, BASE_MAPS[baseMapRef.current].attribution, showEndMarkerRef.current),
+          })
+        } else {
+          setControl(map, { dpi: 300, callback: synthesizeAttribution })
+        }
       })
     })
-  }, [geojsons])
+  }, [geojsons, featuresNext])
 
   return (
     (geojsons.length > 0) ?
@@ -146,7 +167,8 @@ function App() {
         <div style={{
           position: 'absolute',
           top: 10,
-          left: 10,
+          // features=next 時は左上にベースマップ切替ドロップダウンが入るので右に寄せる
+          ...(featuresNext ? { right: 60 } : { left: 10 }),
           zIndex: 1000,
           background: 'white',
           padding: '8px 12px',
